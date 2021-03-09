@@ -1,0 +1,18 @@
+---
+- include: setup-RedHat.yml
+  when: ansible_os_family == 'RedHat'
+
+- include: setup-Debian.yml
+  when: ansible_os_family == 'Debian'
+
+- name: Install Auditbeat.
+  package: name=auditbeat state=latest
+
+- include: config.yml
+  when: auditbeat_create_config | bool
+
+- name: Ensure Auditbeat is started and enabled at boot.
+  service:
+    name: auditbeat
+    state: restarted
+    enabled: true

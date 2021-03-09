@@ -1,0 +1,27 @@
+---
+- name: Copy Auditbeat configuration.
+  template:
+    src: auditbeat.yml.j2
+    dest: "/etc/auditbeat/auditbeat.yml"
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart auditbeat
+
+- name: Ensure Auditbeat SSL key pair directory exists.
+  file:
+    path: "{{ elasticsearch_ssl_dir }}"
+    state: directory
+    mode: 0755
+  when: elasticsearch_ssl_certificate_file | default(false)
+
+- name: Copy SSL cert for auditbeat.
+  copy:
+    src: "{{ item }}"
+    dest: "{{ elasticsearch_ssl_dir }}/{{ item | basename }}"
+    mode: 0644
+  with_items:
+    - "{{ elasticsearch_ssl_certificate_file }}"
+  notify: restart auditbeat
+  when:
+    - elasticsearch_ssl_certificate_file | default(false)
